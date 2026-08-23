@@ -1,0 +1,12 @@
+# Archivos temporales y compilados de BlueJ y Java
+*.class
+*.ctxt
+*.java~
+*.bak
+
+# Directorio de documentación autogenerada
+doc/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
