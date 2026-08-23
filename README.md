@@ -6,6 +6,7 @@ Proyecto Inicial - Ciclo No 1 (2026-2)
 
 ## 👥 Integrantes
 - Juan Venegas
+- Sergio López
 
 ## 📌 Descripción del Proyecto
 Simulador interactivo del modelo de una Máquina Tragamonedas (Slot Machine) reutilizando el paquete gráfico `shapes` en BlueJ.
