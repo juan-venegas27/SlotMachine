@@ -3,7 +3,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit tests for Slot Machine Cycle 2 requirements in invisible mode.
+ * Unit tests for Slot Machine requirements in invisible mode.
  */
 public class SlotMachineC2Test {
     private SlotMachine machine;

@@ -4,7 +4,7 @@ import java.awt.Color;
 import javax.swing.JOptionPane;
 
 /**
- * Slot Machine simulator supporting multi-wheel gaming, lock, swap, and jackpot.
+ * Slot machine simulator.
  */
 public class SlotMachine {
     private ArrayList<Wheel> wheels;
@@ -17,7 +17,7 @@ public class SlotMachine {
     private static final Random random = new Random();
 
     /**
-     * Constructs a slot machine with visual casino components.
+     * Creates a new slot machine without wheels in an invisible state.
      */
     public SlotMachine() {
         wheels = new ArrayList<>();
@@ -37,8 +37,8 @@ public class SlotMachine {
     }
 
     /**
-     * Adds a new wheel at the specified 1-based index position.
-     * @param pos 1-based target insertion index.
+     * Adds a new wheel at the specified position.
+     * @param pos Position where the wheel will be inserted (1 for the first wheel on the left).
      */
     public void addWheel(int pos) {
         Wheel newWheel = new Wheel();
@@ -49,8 +49,8 @@ public class SlotMachine {
     }
 
     /**
-     * Removes the wheel at the specified 1-based position.
-     * @param pos 1-based target index.
+     * Removes the wheel at the specified position.
+     * @param pos Number of the wheel to remove (1 for the first wheel).
      */
     public void delWheel(int pos) {
         if (wheels.isEmpty()) {
@@ -66,9 +66,9 @@ public class SlotMachine {
     }
 
     /**
-     * Adds a symbol with CSS color or hex code to the specified wheel.
-     * @param pos 1-based wheel position.
-     * @param color CSS name or hex color string.
+     * Adds a colored symbol to the specified wheel.
+     * @param pos Target wheel number (1 for the first wheel).
+     * @param color Color name in English (e.g., "red", "yellow") or hexadecimal code (e.g., "#FF0000").
      */
     public void addSymbol(int pos, String color) {
         if (!isValidColor(color)) {
@@ -86,8 +86,8 @@ public class SlotMachine {
     }
 
     /**
-     * Deletes the given symbol across all wheels.
-     * @param symbol Color of the symbol to delete.
+     * Removes a symbol from all wheels in the machine.
+     * @param symbol Color of the symbol to remove (e.g., "red", "#00FF00").
      */
     public void delSymbol(String symbol) {
         if (wheels.isEmpty()) {
@@ -107,9 +107,9 @@ public class SlotMachine {
     }
 
     /**
-     * Places the specified wheel on the designated symbol.
-     * @param wheel 1-based wheel index.
-     * @param symbol Target symbol color.
+     * Sets a specific symbol to be shown in the view of a wheel.
+     * @param wheel Target wheel number (1 for the first wheel).
+     * @param symbol Color of the symbol to display on screen.
      */
     public void placeSymbol(int wheel, String symbol) {
         Wheel target = getWheel(wheel);
@@ -126,8 +126,8 @@ public class SlotMachine {
     }
 
     /**
-     * Spins a single wheel once with animated motion.
-     * @param wheel 1-based wheel index.
+     * Spins a single wheel of the machine.
+     * @param wheel Number of the wheel to spin (1 for the first wheel).
      */
     public void spin(int wheel) {
         Wheel target = getWheel(wheel);
@@ -145,7 +145,7 @@ public class SlotMachine {
     }
 
     /**
-     * Spins all wheels simultaneously with randomized steps.
+     * Spins all wheels of the machine at the same time.
      */
     public void spin() {
         if (wheels.isEmpty()) {
@@ -158,9 +158,9 @@ public class SlotMachine {
     }
 
     /**
-     * Spins a specific wheel by a given step count.
-     * @param wheel 1-based wheel index.
-     * @param steps Number of rotation steps.
+     * Spins a specific wheel by an exact number of steps.
+     * @param wheel Number of the wheel to spin (1 for the first wheel).
+     * @param steps Number of positions the wheel will advance (integer greater than 0).
      */
     public void spin(int wheel, int steps) {
         if (steps < 1) {
@@ -182,8 +182,8 @@ public class SlotMachine {
     }
 
     /**
-     * Sets all wheels directly to the given color sequence.
-     * @param setSymbols Array of target symbol colors.
+     * Sets all wheels to display a given combination of symbols.
+     * @param setSymbols Array with colors to display on each wheel from left to right.
      */
     public void spin(String[] setSymbols) {
         if (setSymbols == null || setSymbols.length != wheels.size()) {
@@ -204,9 +204,9 @@ public class SlotMachine {
     }
 
     /**
-     * Swaps the positions of two wheels.
-     * @param wheel1 1-based index of the first wheel.
-     * @param wheel2 1-based index of the second wheel.
+     * Swaps the positions of two wheels in the machine.
+     * @param wheel1 Number of the first wheel to swap (1 for the first wheel).
+     * @param wheel2 Number of the second wheel to swap (1 for the first wheel).
      */
     public void swap(int wheel1, int wheel2) {
         if (wheels.size() < 2) {
@@ -224,8 +224,8 @@ public class SlotMachine {
     }
 
     /**
-     * Locks the specified wheel to prevent it from spinning.
-     * @param wheel 1-based wheel index.
+     * Locks a wheel to prevent it from spinning.
+     * @param wheel Number of the wheel to lock (1 for the first wheel).
      */
     public void lock(int wheel) {
         Wheel target = getWheel(wheel);
@@ -238,8 +238,8 @@ public class SlotMachine {
     }
 
     /**
-     * Unlocks the specified wheel to permit rotation.
-     * @param wheel 1-based wheel index.
+     * Unlocks a wheel to allow it to spin again.
+     * @param wheel Number of the wheel to unlock (1 for the first wheel).
      */
     public void unlock(int wheel) {
         Wheel target = getWheel(wheel);
@@ -252,16 +252,16 @@ public class SlotMachine {
     }
 
     /**
-     * Returns the symbol colors of the first wheel.
-     * @return Array of symbol colors.
+     * Returns the available symbols in the first wheel.
+     * @return Array containing the colors of the symbols.
      */
     public String[] symbols() {
         return wheels.isEmpty() ? new String[0] : wheels.get(0).symbols();
     }
 
     /**
-     * Counts the distinct visible symbols currently on the machine.
-     * @return Number of unique visible colors.
+     * Counts how many different symbols are currently visible across the machine.
+     * @return Total count of unique visible colors.
      */
     public int distinctSymbols() {
         if (wheels.isEmpty()) return 0;
@@ -274,8 +274,8 @@ public class SlotMachine {
     }
 
     /**
-     * Returns the visible symbols from left to right.
-     * @return Current machine configuration array.
+     * Returns the symbols currently visible on the machine from left to right.
+     * @return Array with the visible colors of each wheel.
      */
     public String[] configuration() {
         String[] res = new String[wheels.size()];
@@ -284,8 +284,8 @@ public class SlotMachine {
     }
 
     /**
-     * Checks if all wheels show the exact same symbol.
-     * @return True if in jackpot state.
+     * Checks if all wheels display the exact same winning symbol.
+     * @return True if every wheel has the same visible color, false otherwise.
      */
     public boolean isjackpot() {
         if (wheels.isEmpty()) return false;
@@ -299,7 +299,7 @@ public class SlotMachine {
     }
 
     /**
-     * Makes the slot machine and its components visible.
+     * Makes the slot machine visible on screen.
      */
     public void makeVisible() {
         isVisible = true;
@@ -307,7 +307,7 @@ public class SlotMachine {
     }
 
     /**
-     * Makes the slot machine completely invisible.
+     * Hides the slot machine from the screen.
      */
     public void makeInvisible() {
         isVisible = false;
@@ -319,7 +319,7 @@ public class SlotMachine {
     }
 
     /**
-     * Closes the application safely.
+     * Closes the simulator and exits the application.
      */
     public void exit() {
         makeInvisible();
@@ -327,17 +327,17 @@ public class SlotMachine {
     }
 
     /**
-     * Indicates whether the last attempted operation succeeded.
-     * @return True if successful.
+     * Indicates whether the last operation was successful.
+     * @return True if the operation was valid, false if it failed.
      */
     public boolean ok() {
         return isOk;
     }
 
     /**
-     * Retrieves the wheel at the specified 1-based index applying limits.
-     * @param pos 1-based wheel position.
-     * @return The target wheel or null if no wheels exist.
+     * Obtains the wheel located at a given position.
+     * @param pos Number of the desired wheel (1 for the first wheel).
+     * @return The requested wheel, or null if no wheels exist.
      */
     private Wheel getWheel(int pos) {
         if (wheels.isEmpty()) return null;
@@ -345,17 +345,17 @@ public class SlotMachine {
     }
 
     /**
-     * Clamps an integer value between 1 and a given upper limit.
-     * @param val The value to constrain.
-     * @param max The maximum permissible value.
-     * @return The clamped integer value.
+     * Keeps a number within the valid range of positions.
+     * @param val Requested number.
+     * @param max Maximum allowed value.
+     * @return Number adjusted between 1 and the maximum allowed.
      */
     private int clamp(int val, int max) {
         return Math.max(1, Math.min(val, max));
     }
 
     /**
-     * Arranges the background chassis and positions all wheels inside it.
+     * Updates the on-screen layout and spacing of all wheels and frames.
      */
     private void positionWheels() {
         int startX = 35;
@@ -383,7 +383,7 @@ public class SlotMachine {
     }
 
     /**
-     * Coordinates the step-by-step animated spin across all active wheels.
+     * Performs an animated rotation for all wheels on screen.
      */
     private void executeAnimatedSpin() {
         int[] turns = new int[wheels.size()];
@@ -401,7 +401,7 @@ public class SlotMachine {
     }
 
     /**
-     * Updates the jackpot indicator lights according to the winning state.
+     * Updates the jackpot indicator light based on the winning state.
      */
     private void updateJackpotIndicator() {
         if (!isVisible) return;
@@ -415,9 +415,9 @@ public class SlotMachine {
     }
 
     /**
-     * Validates if a given string represents a valid CSS name or hex color code.
-     * @param colorString The color string to validate.
-     * @return True if valid, false otherwise.
+     * Checks if a color name or hex code is valid.
+     * @param colorString Text of the color to verify (e.g., "red", "#FF0000").
+     * @return True if the color is valid, false otherwise.
      */
     private boolean isValidColor(String colorString) {
         if (colorString == null || colorString.trim().isEmpty()) return false;
@@ -433,11 +433,10 @@ public class SlotMachine {
         return isCssName(c.toLowerCase());
     }
 
-
     /**
-     * Checks if the color string matches standard CSS named colors.
-     * @param c Lowercase color name.
-     * @return True if supported in the CSS palette.
+     * Checks if a color name belongs to the list of allowed color names.
+     * @param c Name of the color in lowercase (e.g., "blue").
+     * @return True if the color name is supported, false otherwise.
      */
     private boolean isCssName(String c) {
         String[] validColors = {
@@ -445,7 +444,6 @@ public class SlotMachine {
             "cyan", "gray", "orange", "pink", "gold", "purple", "silver",
             "brown", "coral", "crimson", "navy", "lime", "teal"
         };
-        
         for (String validColor : validColors) {
             if (validColor.equals(c)) {
                 return true;
@@ -455,8 +453,8 @@ public class SlotMachine {
     }
 
     /**
-     * Handles operational failures, updates status, and notifies if visible.
-     * @param message The descriptive error message to display.
+     * Registers an operation error and notifies the user if visible.
+     * @param message Description of the error.
      */
     private void fail(String message) {
         isOk = false;
