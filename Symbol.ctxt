@@ -1,0 +1,23 @@
+#BlueJ class context
+#Sun Sep 06 19:40:38 COT 2026
+comment0.target=Symbol
+comment0.text=\r\n Represents an individual visual symbol displayed inside a wheel slot.\r\n
+comment1.params=color
+comment1.target=Symbol(java.lang.String)
+comment1.text=\r\n Constructs a symbol with the specified color.\r\n @param color CSS name or hex code of the symbol.\r\n
+comment2.target=java.lang.String getColor()
+comment2.text=\r\n Gets the color value of this symbol.\r\n @return Color name or hex code.\r\n
+comment3.params=newColor
+comment3.target=void changeColor(java.lang.String)
+comment3.text=\r\n Changes the visual color of this symbol.\r\n @param newColor New CSS name or hex code.\r\n
+comment4.params=x y
+comment4.target=void moveTo(int, int)
+comment4.text=\r\n Moves the symbol to the specified coordinates.\r\n @param x Horizontal pixel position.\r\n @param y Vertical pixel position.\r\n
+comment5.target=void makeVisible()
+comment5.text=\r\n Makes this symbol visible on canvas.\r\n
+comment6.target=void makeInvisible()
+comment6.text=\r\n Hides this symbol from the canvas.\r\n
+comment7.params=otherColor
+comment7.target=boolean matches(java.lang.String)
+comment7.text=\r\n Checks if this symbol matches a given color string.\r\n @param otherColor Color string to check against.\r\n @return True if colors match ignoring case.\r\n
+numComments=8

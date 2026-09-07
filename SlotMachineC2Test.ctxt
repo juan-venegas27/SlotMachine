@@ -1,0 +1,19 @@
+#BlueJ class context
+#Sun Sep 06 19:40:38 COT 2026
+comment0.target=SlotMachineC2Test
+comment0.text=\r\n Unit tests for Slot Machine Cycle 2 requirements in invisible mode.\r\n
+comment1.target=void setUp()
+comment1.text=\r\n Sets up a standard 3-wheel slot machine in invisible mode.\r\n
+comment2.target=void shouldSwapWheelsCorrectly()
+comment2.text=\r\n Tests swapping positions of two valid wheels.\r\n
+comment3.target=void shouldNotSpinLockedWheel()
+comment3.text=\r\n Tests that a locked wheel rejects rotation and maintains its symbol.\r\n
+comment4.target=void shouldRotateExactNumberOfSteps()
+comment4.text=\r\n Tests rotating a wheel by a positive number of steps.\r\n
+comment5.target=void shouldFailWhenSpinningNegativeSteps()
+comment5.text=\r\n Tests that negative step rotation is rejected.\r\n
+comment6.target=void shouldSetCustomConfiguration()
+comment6.text=\r\n Tests setting a custom valid symbol configuration.\r\n
+comment7.target=void shouldFailConfigurationWithMissingSymbol()
+comment7.text=\r\n Tests that configuring an absent symbol causes operation failure.\r\n
+numComments=8
