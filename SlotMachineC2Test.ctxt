@@ -1,7 +1,7 @@
 #BlueJ class context
-#Sun Sep 06 19:40:38 COT 2026
+#Sat Sep 19 22:41:39 COT 2026
 comment0.target=SlotMachineC2Test
-comment0.text=\r\n Unit tests for Slot Machine Cycle 2 requirements in invisible mode.\r\n
+comment0.text=\r\n Unit tests for Slot Machine requirements in invisible mode.\r\n
 comment1.target=void setUp()
 comment1.text=\r\n Sets up a standard 3-wheel slot machine in invisible mode.\r\n
 comment2.target=void shouldSwapWheelsCorrectly()

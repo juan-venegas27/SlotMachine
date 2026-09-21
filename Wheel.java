@@ -34,43 +34,57 @@ public class Wheel {
         yPosition = posy;
         isVisible = false;
         isLocked = false;
+
         wheelFrame = new Rectangle();
         wheelFrame.changeSize(100, 70);
         wheelFrame.changeColor("#A8A9AD");
+
         wheelViewport = new Rectangle();
         wheelViewport.changeSize(84, 54);
         wheelViewport.changeColor("#FDFDFD");
+
         updatePositions();
     }
 
     /**
      * Adds a new colored symbol to the wheel at the specified position.
      * @param pos Insertion position for the symbol (1 for the first position).
-     * @param color Color name in English (e.g., "red") or hex code (e.g., "#FF0000").
+     * @param color Color name in English or hexadecimal code.
      */
     public void addSymbol(int pos, String color) {
         Symbol newSymbol = new Symbol(color);
+
         if (symbols.isEmpty()) {
             symbols.add(newSymbol);
         } else {
             int targetPos = Math.max(1, Math.min(pos, symbols.size() + 1));
             symbols.add(targetPos - 1, newSymbol);
         }
+
         updatePositions();
     }
 
     /**
      * Removes the first symbol matching the specified color.
-     * @param color Color of the symbol to remove (e.g., "blue" or "#0000FF").
+     * @param color Color of the symbol to remove.
      * @return True if the symbol was found and removed, false otherwise.
      */
     public boolean delSymbol(String color) {
         int index = indexOfColor(color);
-        if (index == -1) return false;
+
+        if (index == -1) {
+            return false;
+        }
+
         Symbol removed = symbols.remove(index);
         removed.makeInvisible();
-        if (symbols.isEmpty()) currentIndex = 0;
-        else if (currentIndex >= symbols.size()) currentIndex = symbols.size() - 1;
+
+        if (symbols.isEmpty()) {
+            currentIndex = 0;
+        } else if (currentIndex >= symbols.size()) {
+            currentIndex = symbols.size() - 1;
+        }
+
         updatePositions();
         return true;
     }
@@ -82,7 +96,11 @@ public class Wheel {
      */
     public boolean placeSymbol(String color) {
         int index = indexOfColor(color);
-        if (index == -1) return false;
+
+        if (index == -1) {
+            return false;
+        }
+
         currentIndex = index;
         updatePositions();
         return true;
@@ -102,7 +120,9 @@ public class Wheel {
      * @return Currently visible color, or null if the wheel has no symbols.
      */
     public String getCurrentSymbol() {
-        return symbols.isEmpty() ? null : symbols.get(currentIndex).getColor();
+        return symbols.isEmpty()
+            ? null
+            : symbols.get(currentIndex).getColor();
     }
 
     /**
@@ -111,7 +131,11 @@ public class Wheel {
      */
     public String[] symbols() {
         String[] colors = new String[symbols.size()];
-        for (int i = 0; i < symbols.size(); i++) colors[i] = symbols.get(i).getColor();
+
+        for (int i = 0; i < symbols.size(); i++) {
+            colors[i] = symbols.get(i).getColor();
+        }
+
         return colors;
     }
 
@@ -124,32 +148,46 @@ public class Wheel {
     }
 
     /**
-     * Advances the wheel forward by one position.
-     */
-    public void spinStep() {
-        if (!isLocked && !symbols.isEmpty()) {
-            currentIndex = (currentIndex + 1) % symbols.size();
-            updatePositions();
-        }
-    }
-
-    /**
      * Spins the wheel randomly.
      */
     public void spin() {
-        if (isLocked || symbols.isEmpty()) return;
+        if (isLocked || symbols.isEmpty()) {
+            return;
+        }
+
         spinSteps(2 + random.nextInt(6));
     }
 
     /**
-     * Advances the wheel forward by a specific number of steps.
-     * @param steps Number of positions to advance (integer greater than 0).
+     * Advances or moves the wheel backward by a specific number of steps.
+     * Positive values rotate forward and negative values rotate backward.
+     * The movement is cyclic.
+     * @param steps Number of positions to rotate.
      */
     public void spinSteps(int steps) {
-        if (isLocked || symbols.isEmpty()) return;
-        for (int s = 0; s < steps; s++) {
-            spinStep();
-            if (isVisible) Canvas.getCanvas().wait(70);
+        if (isLocked || symbols.isEmpty() || steps == 0) {
+            return;
+        }
+
+        int direction = steps > 0 ? 1 : -1;
+        int amount = Math.abs(steps % symbols.size());
+
+        for (int s = 0; s < amount; s++) {
+            currentIndex += direction;
+
+            if (currentIndex >= symbols.size()) {
+                currentIndex = 0;
+            }
+
+            if (currentIndex < 0) {
+                currentIndex = symbols.size() - 1;
+            }
+
+            updatePositions();
+
+            if (isVisible) {
+                Canvas.getCanvas().wait(70);
+            }
         }
     }
 
@@ -159,8 +197,8 @@ public class Wheel {
      * @param y Vertical pixel position.
      */
     public void moveTo(int x, int y) {
-        this.xPosition = x;
-        this.yPosition = y;
+        xPosition = x;
+        yPosition = y;
         updatePositions();
     }
 
@@ -179,7 +217,10 @@ public class Wheel {
         isVisible = false;
         wheelFrame.makeInvisible();
         wheelViewport.makeInvisible();
-        for (Symbol sym : symbols) sym.makeInvisible();
+
+        for (Symbol sym : symbols) {
+            sym.makeInvisible();
+        }
     }
 
     /**
@@ -187,8 +228,8 @@ public class Wheel {
      */
     public void lock() {
         isLocked = true;
-        wheelFrame.changeColor("#8B0000");
-        if (isVisible) wheelFrame.makeVisible();
+        wheelFrame.changeColor("black");
+        updatePositions();
     }
 
     /**
@@ -197,7 +238,7 @@ public class Wheel {
     public void unlock() {
         isLocked = false;
         wheelFrame.changeColor("#A8A9AD");
-        if (isVisible) wheelFrame.makeVisible();
+        updatePositions();
     }
 
     /**
@@ -214,15 +255,25 @@ public class Wheel {
     private void updatePositions() {
         wheelFrame.moveTo(xPosition, yPosition);
         wheelViewport.moveTo(xPosition + 8, yPosition + 8);
+
         if (isVisible) {
             wheelFrame.makeVisible();
             wheelViewport.makeVisible();
         }
+
         for (int i = 0; i < symbols.size(); i++) {
             Symbol sym = symbols.get(i);
-            sym.moveTo(xPosition + 12, yPosition + 13);
-            if (i == currentIndex && isVisible) sym.makeVisible();
-            else sym.makeInvisible();
+
+            sym.moveTo(
+                xPosition + 12,
+                yPosition + 13
+            );
+
+            if (i == currentIndex && isVisible) {
+                sym.makeVisible();
+            } else {
+                sym.makeInvisible();
+            }
         }
     }
 
@@ -233,8 +284,11 @@ public class Wheel {
      */
     private int indexOfColor(String color) {
         for (int i = 0; i < symbols.size(); i++) {
-            if (symbols.get(i).matches(color)) return i;
+            if (symbols.get(i).matches(color)) {
+                return i;
+            }
         }
+
         return -1;
     }
 }

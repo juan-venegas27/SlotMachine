@@ -1,0 +1,12 @@
+#BlueJ class context
+#Sat Sep 19 21:56:29 COT 2026
+comment0.target=Action
+comment0.text=\r\n Represents one rotation action performed on the slot machine.\r\n
+comment1.params=wheel steps
+comment1.target=Action(int, int)
+comment1.text=\r\n Creates an action.\r\n @param wheel Number of the wheel to rotate.\r\n @param steps Number of rotation steps.\r\n
+comment2.target=int getWheel()
+comment2.text=\r\n Returns the wheel number.\r\n @return Wheel number.\r\n
+comment3.target=int getSteps()
+comment3.text=\r\n Returns the number of steps.\r\n @return Number of steps.\r\n
+numComments=4

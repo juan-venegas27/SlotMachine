@@ -46,7 +46,6 @@ public class Circle{
             canvas.draw(this, color, 
                 new Ellipse2D.Double(xPosition, yPosition, 
                 diameter, diameter));
-            canvas.wait(10);
         }
     }
 
