@@ -1,8 +1,9 @@
-import java.util.ArrayList;
+package SLOTMACHINEFINAL;
+
 import java.awt.Color;
-import javax.swing.JOptionPane;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Random;
+import javax.swing.JOptionPane;
 /**
  * Slot machine simulator.
  */
@@ -19,11 +20,11 @@ public class SlotMachine {
     private Circle leverKnob;
     private static final Random random = new Random();
     /**
-     * Creates a new slot machine without wheels in an invisible state.
+     * Creates a new slot machine without wheels.
      */
     public SlotMachine() {
         reel = new Reel();
-        isVisible = true;
+        isVisible = false;
         isOk = true;
         machineOuterFrame = new Rectangle();
         machineOuterFrame.changeColor("#1A1A1D");
@@ -38,22 +39,17 @@ public class SlotMachine {
         leverBase = new Rectangle();
         leverBase.changeSize(30, 20);
         leverBase.changeColor("#444444");
-        
         leverBar = new Rectangle();
         leverBar.changeSize(75, 10);
         leverBar.changeColor("#777777");
-        
         leverKnob = new Circle();
         leverKnob.changeSize(28);
         leverKnob.changeColor("#C62828");
         positionWheels();
     }
 
-    
     /**
-     * Creates a slot machine with n wheels.
-     * Each wheel contains the same n distinct colors in the same order.
-     * The initial visible symbol is random for every wheel.
+     * Creates a slot machine with n normal wheels.
      * @param n Number of wheels and symbols.
      */
     public SlotMachine(int n) {
@@ -63,23 +59,21 @@ public class SlotMachine {
         }
         String[] colors = generateColors(n);
         for (int i = 0; i < n; i++) {
-            reel.addWheel(i + 1);
+            reel.addWheel(i + 1, "normal");
             Wheel wheel = reel.getWheel(i + 1);
             for (int j = 0; j < n; j++) {
-                wheel.addSymbol(j + 1, colors[j]);
+                wheel.addSymbol(j + 1, colors[j],"normal" );
             }
-            String initialColor =
-                colors[random.nextInt(colors.length)];
-            wheel.placeSymbol(initialColor);
+            wheel.placeSymbol( colors[random.nextInt(colors.length)]);
         }
         positionWheels();
         isOk = true;
     }
-    
+
     /**
-     * Generates n different random colors in hexadecimal format.
-     * @param n Number of colors to generate.
-     * @return Array containing n different hexadecimal colors.
+     * Generates n different random colors.
+     * @param n Number of colors.
+     * @return Generated colors.
      */
     private String[] generateColors(int n) {
         ArrayList<String> colors = new ArrayList<String>();
@@ -90,11 +84,11 @@ public class SlotMachine {
             }
         }
         return colors.toArray(new String[colors.size()]);
-    }    
-    
+    }
+
     /**
-     * Generates a random color in hexadecimal format.
-     * @return A hexadecimal color such as "#3FA7D6".
+     * Generates a random hexadecimal color.
+     * @return Generated color.
      */
     private String generateRandomColor() {
         int red = random.nextInt(256);
@@ -102,72 +96,103 @@ public class SlotMachine {
         int blue = random.nextInt(256);
         return String.format("#%02X%02X%02X",red,green,blue);
     }
-    
-    
+
     /**
-     * Adds a new wheel at the specified position.
-     * @param pos Position where the wheel will be inserted (1 for the first wheel on the left).
+     * Adds a normal wheel.
+     * @param pos Position of the wheel.
      */
     public void addWheel(int pos) {
-        reel.addWheel(pos);
-        positionWheels();
-        isOk = true;
+        addWheel(pos, "normal");
     }
 
     /**
-     * Removes the wheel at the specified position.
-     * @param pos Number of the wheel to remove (1 for the first wheel).
+     * Adds a wheel of the requested type.
+     * @param pos Wheel position.
+     * @param type Wheel type.
+     */
+    public void addWheel(int pos, String type) {
+        try {
+            reel.addWheel(pos, type);
+            positionWheels();
+            isOk = true;
+        } catch (IllegalArgumentException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    /**
+     * Removes a wheel.
+     * @param pos Wheel position.
      */
     public void delWheel(int pos) {
         if (reel.size() == 0) {
             fail("No wheels available to delete.");
             return;
         }
-
+        Wheel target = getWheel(pos);
+        if (target == null) {
+            fail("Invalid wheel index.");
+            return;
+        }
+        if (!target.canDelete()) {
+            fail("Wheel cannot be deleted.");
+            return;
+        }
         Wheel wheel = reel.delWheel(pos);
+        if (wheel == null) {
+            fail("Wheel could not be deleted.");
+            return;
+        }
         wheel.makeInvisible();
-
         positionWheels();
         isOk = true;
         updateJackpotIndicator();
     }
 
     /**
-     * Adds a colored symbol to the specified wheel.
-     * @param pos Target wheel number (1 for the first wheel).
-     * @param color Color name in English (e.g., "red", "yellow") or hexadecimal code (e.g., "#FF0000").
+     * Adds a normal symbol.
+     * @param pos Wheel position.
+     * @param color Symbol color.
      */
     public void addSymbol(int pos, String color) {
+        addSymbol(pos, color, "normal");
+    }
+
+    /**
+     * Adds a symbol of the requested type.
+     * @param pos Wheel position.
+     * @param color Symbol color.
+     * @param type Symbol type.
+     */
+    public void addSymbol(int pos,String color,String type) {
         if (!isValidColor(color)) {
             fail("Invalid CSS or hex color: " + color);
             return;
         }
-
         Wheel wheel = getWheel(pos);
-
         if (wheel == null) {
             fail("No wheels available to add symbol.");
             return;
         }
-
-        wheel.addSymbol(wheel.countSymbols() + 1, color);
-
-        isOk = true;
-        updateJackpotIndicator();
+        try {
+            wheel.addSymbol(wheel.countSymbols() + 1,color,type   );
+            isOk = true;
+            updateJackpotIndicator();
+        } catch (IllegalArgumentException e) {
+            fail(e.getMessage());
+        }
     }
 
     /**
-     * Removes a symbol from all wheels in the machine.
-     * @param symbol Color of the symbol to remove (e.g., "red", "#00FF00").
+     * Removes a symbol from every wheel.
+     * @param symbol Symbol color.
      */
     public void delSymbol(String symbol) {
         if (reel.size() == 0) {
             fail("No wheels available in machine.");
             return;
         }
-
         boolean found = reel.delSymbol(symbol);
-
         if (found) {
             isOk = true;
             updateJackpotIndicator();
@@ -177,18 +202,16 @@ public class SlotMachine {
     }
 
     /**
-     * Sets a specific symbol to be shown in the view of a wheel.
-     * @param wheel Target wheel number (1 for the first wheel).
-     * @param symbol Color of the symbol to display on screen.
+     * Places a symbol on a wheel.
+     * @param wheel Wheel number.
+     * @param symbol Symbol color.
      */
     public void placeSymbol(int wheel, String symbol) {
         Wheel target = getWheel(wheel);
-
         if (target == null) {
             fail("Invalid wheel index.");
             return;
         }
-
         if (target.placeSymbol(symbol)) {
             isOk = true;
             updateJackpotIndicator();
@@ -198,238 +221,235 @@ public class SlotMachine {
     }
 
     /**
-     * Spins a single wheel of the machine.
-     * @param wheel Number of the wheel to spin (1 for the first wheel).
+     * Spins one wheel randomly.
+     * @param wheel Wheel number.
      */
     public void spin(int wheel) {
         Wheel target = getWheel(wheel);
-
         if (target == null) {
             fail("Invalid wheel index.");
             return;
         }
-
         if (target.isLocked()) {
             fail("Wheel is currently locked.");
             return;
         }
-
         target.spin();
-
         isOk = true;
         updateJackpotIndicator();
     }
 
     /**
-     * Spins all wheels of the machine at the same time.
+     * Spins all wheels.
      */
     public void spin() {
         if (reel.size() == 0) {
             fail("No wheels available to spin.");
             return;
         }
-
-        executeAnimatedSpin();
-
+        reel.spin();
         isOk = true;
         updateJackpotIndicator();
     }
 
     /**
-     * Spins a specific wheel by an exact number of steps.
-     * Positive values rotate forward and negative values rotate backward.
-     * @param wheel Number of the wheel to spin.
-     * @param steps Number of positions to rotate.
+     * Spins one wheel by an exact number of steps.
+     * @param wheel Wheel number.
+     * @param steps Number of positions.
      */
     public void spin(int wheel, int steps) {
         Wheel target = getWheel(wheel);
-    
         if (target == null) {
             fail("Invalid wheel index.");
             return;
         }
-    
         if (target.isLocked()) {
             fail("Wheel is currently locked.");
             return;
         }
-    
         target.spinSteps(steps);
-    
         isOk = true;
         updateJackpotIndicator();
     }
 
     /**
-     * Sets all wheels to display a given combination of symbols.
-     * @param setSymbols Array with colors to display on each wheel from left to right.
+     * Sets the configuration of all wheels.
+     * @param setSymbols Symbols to display from left to right.
      */
     public void spin(String[] setSymbols) {
-        if (setSymbols == null || setSymbols.length != reel.size()) {
+        if (setSymbols == null|| setSymbols.length != reel.size()) {
             fail("Configuration length must match wheel count.");
             return;
         }
-
         for (int i = 0; i < reel.size(); i++) {
             if (!reel.getWheel(i + 1).containsSymbol(setSymbols[i])) {
-                fail("Symbol " + setSymbols[i] + " not found in wheel " + (i + 1));
+                fail("Symbol " + setSymbols[i]+ " not found in wheel " + (i + 1));
                 return;
             }
         }
-
         for (int i = 0; i < reel.size(); i++) {
             reel.getWheel(i + 1).placeSymbol(setSymbols[i]);
         }
-
         isOk = true;
         updateJackpotIndicator();
     }
 
     /**
-     * Swaps the positions of two wheels in the machine.
-     * @param wheel1 Number of the first wheel to swap (1 for the first wheel).
-     * @param wheel2 Number of the second wheel to swap (1 for the first wheel).
+     * Swaps two wheels.
+     * @param wheel1 First wheel.
+     * @param wheel2 Second wheel.
      */
     public void swap(int wheel1, int wheel2) {
         if (reel.size() < 2) {
             fail("At least 2 wheels required to swap.");
             return;
         }
-
-        reel.swap(wheel1, wheel2);
+        if (!reel.canSwap(wheel1, wheel2)) {
+            fail("One of the selected wheels cannot be swapped.");
+            return;
+        }
+        if (!reel.swap(wheel1, wheel2)) {
+            fail("Wheel swap failed.");
+            return;
+        }
         positionWheels();
-
         isOk = true;
         updateJackpotIndicator();
     }
 
     /**
-     * Locks a wheel to prevent it from spinning.
-     * @param wheel Number of the wheel to lock (1 for the first wheel).
+     * Locks a wheel.
+     * @param wheel Wheel number.
      */
     public void lock(int wheel) {
         Wheel target = getWheel(wheel);
-
-        if (target != null) {
-            target.lock();
-            updateJackpotIndicator();
-            isOk = true;
-        } else {
+        if (target == null) {
             fail("Invalid wheel index.");
+            return;
         }
+        if (!target.canLock()) {
+            fail("Wheel cannot be locked.");
+            return;
+        }
+        target.lock();
+        updateJackpotIndicator();
+        isOk = true;
     }
 
     /**
-     * Unlocks a wheel to allow it to spin again.
-     * @param wheel Number of the wheel to unlock (1 for the first wheel).
+     * Unlocks a wheel.
+     * @param wheel Wheel number.
      */
     public void unlock(int wheel) {
         Wheel target = getWheel(wheel);
-
-        if (target != null) {
-            target.unlock();
-            updateJackpotIndicator();
-            isOk = true;
-        } else {
+        if (target == null) {
             fail("Invalid wheel index.");
+            return;
         }
+        target.unlock();
+        updateJackpotIndicator();
+        isOk = true;
     }
 
     /**
-     * Returns the available symbols in the first wheel.
-     * @return Array containing the colors of the symbols.
+     * Returns symbols available in the first wheel.
+     * @return Symbol colors.
      */
     public String[] symbols() {
         return reel.symbols();
     }
 
     /**
-     * Counts how many different symbols are currently visible across the machine.
-     * @return Total count of unique visible colors.
+     * Counts different visible symbols.
+     * @return Number of different visible colors.
      */
     public int distinctSymbols() {
-        if (reel.size() == 0) return 0;
-
-        String[] config = configuration();
-        ArrayList<String> unique = new ArrayList<>();
-
-        for (String c : config) {
-            if (c != null && !unique.contains(c)) {
-                unique.add(c);
+        if (reel.size() == 0) {
+            return 0;
+        }
+        String[] configuration = configuration();
+        ArrayList<String> unique = new ArrayList<String>();
+        for (String color : configuration) {
+            if (color != null&& !unique.contains(color)) {
+                unique.add(color);
             }
         }
-
         return unique.size();
     }
 
     /**
-     * Returns the symbols currently visible on the machine from left to right.
-     * @return Array with the visible colors of each wheel.
+     * Returns the visible configuration.
+     * @return Visible symbol colors.
      */
     public String[] configuration() {
         return reel.configuration();
     }
 
     /**
-     * Checks if all unlocked wheels display the same winning symbol.
+     * Checks if all unlocked wheels can represent the same winning symbol.
+     * Wildcard symbols can match any color.
      * Locked wheels are ignored.
-     * @return True if all unlocked wheels have the same visible color.
+     * @return True when the configuration is a jackpot.
      */
     public boolean isjackpot() {
-        if (reel.size() == 0) return false;
-        Wheel firstWheel = reel.firstUnlockedWheel();
-        if (firstWheel == null) return false;
-        String first = firstWheel.getCurrentSymbol();
-        if (first == null) return false;
+        if (reel.size() == 0) {
+            return false;
+        }
+        String targetColor = null;
+        boolean foundWildcard = false;
+        boolean foundUnlockedWheel = false;
         for (int i = 1; i <= reel.size(); i++) {
-            Wheel currentWheel = reel.getWheel(i);
-            if (currentWheel.isLocked()) {
+            Wheel wheel = reel.getWheel(i);
+            if (wheel.isLocked()) {
                 continue;
             }
-            String curr = currentWheel.getCurrentSymbol();
-            if (curr == null || !curr.equalsIgnoreCase(first)) {
+            foundUnlockedWheel = true;
+            String color = wheel.getCurrentSymbol();
+            if (color == null) {
+                return false;
+            }
+            if (wheel.currentSymbolIsWildcard()) {
+                foundWildcard = true;
+                continue;
+            }
+            if (targetColor == null) {
+                targetColor = color;
+            } else if (!targetColor.equalsIgnoreCase(color)) {
                 return false;
             }
         }
-        return true;
+        return foundUnlockedWheel && (targetColor != null || foundWildcard);
     }
 
     /**
-     * Makes the slot machine visible on screen.
+     * Makes the machine visible.
      */
     public void makeVisible() {
         isVisible = true;
-    
         reel.makeVisible();
-    
         leverBase.makeVisible();
         leverBar.makeVisible();
         leverKnob.makeVisible();
-    
         positionWheels();
     }
 
     /**
-     * Hides the slot machine from the screen.
+     * Hides the machine.
      */
     public void makeInvisible() {
         isVisible = false;
-    
         jackpotBulb.makeInvisible();
         jackpotOuter.makeInvisible();
-    
         leverKnob.makeInvisible();
         leverBar.makeInvisible();
         leverBase.makeInvisible();
-    
         reel.makeInvisible();
-    
         machineInnerFrame.makeInvisible();
         machineOuterFrame.makeInvisible();
     }
 
     /**
-     * Closes the simulator and exits the application.
+     * Closes the simulator.
      */
     public void exit() {
         makeInvisible();
@@ -438,35 +458,35 @@ public class SlotMachine {
 
     /**
      * Indicates whether the last operation was successful.
-     * @return True if the operation was valid, false if it failed.
+     * @return True when successful.
      */
     public boolean ok() {
         return isOk;
     }
 
     /**
-     * Obtains the wheel located at a given position.
-     * @param pos Number of the desired wheel (1 for the first wheel).
-     * @return The requested wheel, or null if no wheels exist.
+     * Gets a wheel by position.
+     * @param pos Wheel position.
+     * @return Requested wheel or null.
      */
     private Wheel getWheel(int pos) {
         return reel.getWheel(pos);
     }
 
     /**
-     * Updates the on-screen layout and spacing of all wheels and frames.
+     * Updates the machine visual layout.
      */
     private void positionWheels() {
         int spacing = 80;
-        int totalWidth = Math.max(260, (reel.size() * spacing)) + 50;
+        int totalWidth = Math.max(260,reel.size() * spacing) + 50;
         int leverX = totalWidth + 18;
         leverBase.moveTo(leverX - 8, 145);
-        leverBar.moveTo(leverX+12, 90);
-        leverKnob.moveTo(leverX +3, 72);
+        leverBar.moveTo(leverX + 12, 90);
+        leverKnob.moveTo(leverX + 3, 72);
         machineOuterFrame.moveTo(10, 10);
         machineOuterFrame.changeSize(270, totalWidth);
         machineInnerFrame.moveTo(20, 20);
-        machineInnerFrame.changeSize(250, totalWidth - 20);
+        machineInnerFrame.changeSize(250,totalWidth - 20);
         int centerX = totalWidth / 2;
         jackpotOuter.moveTo(centerX - 11, 185);
         jackpotBulb.moveTo(centerX - 5, 191);
@@ -481,18 +501,12 @@ public class SlotMachine {
     }
 
     /**
-     * Performs an animated rotation for all wheels on screen.
-     */
-    private void executeAnimatedSpin() {
-        reel.spin();
-    }
-    
-    /**
-     * Updates the jackpot indicator light based on the winning state.
+     * Updates the jackpot indicator.
      */
     private void updateJackpotIndicator() {
-        if (!isVisible) return;
-
+        if (!isVisible) {
+            return;
+        }
         if (isjackpot()) {
             jackpotOuter.changeColor("#FFD700");
             jackpotBulb.changeColor("#FF073A");
@@ -503,61 +517,55 @@ public class SlotMachine {
     }
 
     /**
-     * Checks if a color name or hex code is valid.
-     * @param colorString Text of the color to verify (e.g., "red", "#FF0000").
-     * @return True if the color is valid, false otherwise.
+     * Checks whether a color is valid.
+     * @param colorString Color text.
+     * @return True when the color is supported.
      */
     private boolean isValidColor(String colorString) {
-        if (colorString == null || colorString.trim().isEmpty()) return false;
-
-        String c = colorString.trim();
-
-        if (c.startsWith("#") && (c.length() == 7 || c.length() == 4)) {
+        if (colorString == null || colorString.trim().isEmpty()) {
+            return false;
+        }
+        String color = colorString.trim();
+        if (color.startsWith("#") && (color.length() == 7 || color.length() == 4)) {
             try {
-                Color.decode(c);
+                Color.decode(color);
                 return true;
             } catch (Exception e) {
                 return false;
             }
         }
-
-        return isCssName(c.toLowerCase());
+        return isCssName(color.toLowerCase());
     }
 
     /**
-     * Checks if a color name belongs to the list of allowed color names.
-     * @param c Name of the color in lowercase (e.g., "blue").
-     * @return True if the color name is supported, false otherwise.
+     * Checks whether a CSS color name is supported.
+     * @param color Color name in lowercase.
+     * @return True when supported.
      */
-    private boolean isCssName(String c) {
+    private boolean isCssName(String color) {
         String[] validColors = {
-            "red", "black", "blue", "yellow", "green", "magenta", "white",
-            "cyan", "gray", "orange", "pink", "gold", "purple", "silver",
-            "brown", "coral", "crimson", "navy", "lime", "teal"
+            "red", "black", "blue", "yellow", "green",
+            "magenta", "white", "cyan", "gray", "orange",
+            "pink", "gold", "purple", "silver", "brown",
+            "coral", "crimson", "navy", "lime", "teal"
         };
-
         for (String validColor : validColors) {
-            if (validColor.equals(c)) {
+            if (validColor.equals(color)) {
                 return true;
             }
         }
-
         return false;
     }
 
     /**
-     * Registers an operation error and notifies the user if visible.
-     * @param message Description of the error.
+     * Registers an operation failure.
+     * @param message Error description.
      */
     private void fail(String message) {
         isOk = false;
-
         if (isVisible) {
-            JOptionPane.showMessageDialog(
-                null,
-                message,
-                "Slot Machine",
-                JOptionPane.ERROR_MESSAGE
+            JOptionPane.showMessageDialog(null,message,"Slot Machine",
+            JOptionPane.ERROR_MESSAGE
             );
         }
     }

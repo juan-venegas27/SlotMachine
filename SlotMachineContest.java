@@ -1,3 +1,5 @@
+package SLOTMACHINEFINAL;
+
 import java.util.ArrayList;
 
 /**
@@ -36,7 +38,11 @@ public class SlotMachineContest {
         }
         int targetPosition = findPosition(firstScan, false);
         int referencePosition = findPosition(firstScan, true);
-        int[] targetPositions = findTargetPositions(targetPosition, referencePosition);
+        int[] targetPositions =
+        findTargetPositions(targetPosition, referencePosition);
+        if (solved) {
+            return;
+        }
         alignWheels(targetPositions);
         solved = true;
     }

@@ -1,3 +1,5 @@
+package SLOTMACHINEFINAL;
+
 /**
  * Represents one rotation action performed on the slot machine.
  */

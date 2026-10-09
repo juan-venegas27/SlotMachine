@@ -1,3 +1,5 @@
+package SLOTMACHINEFINAL;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
@@ -30,8 +32,8 @@ public class Canvas {
             // Ampliación canvas
             canvasSingleton = new Canvas(
                 "BlueJ Shapes Demo",
-                1000,
-                400,
+                1550,
+                350,
                 Color.white
             );
         }
@@ -65,7 +67,6 @@ public class Canvas {
         canvas.setPreferredSize(new Dimension(width, height));
         backgroundColour = bgColour;
         frame.pack();
-
         objects = new ArrayList<Object>();
         shapes = new HashMap<Object, ShapeDescription>();
     }

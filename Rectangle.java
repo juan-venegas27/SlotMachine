@@ -1,271 +1,128 @@
-import java.awt.*;
+package SLOTMACHINEFINAL;
 
 /**
  * A rectangle that can be manipulated and that draws itself on a canvas.
- * 
- * @author  Michael Kolling and David J. Barnes (Modified)
- * @version 1.0  (15 July 2000)()
  */
-
-
- 
-public class Rectangle{
-
+public class Rectangle extends Figure {
     public static int EDGES = 4;
-    
     private int height;
     private int width;
-    private int xPosition;
-    private int yPosition;
-    private String color;
-    private boolean isVisible;
 
     /**
-     * multiply the size of the rectangle by x times
+     * Creates a rectangle at the default position with the default color.
      */
-    public void multiplySize(int x){
-        if (x > 0){
-            erase();
-            changeSize(width*x,height*x);
-            draw();
-        }else{
-            erase();
-            changeSize(width/Math.abs(x),height/Math.abs(x));
-            draw();
-        }
-    }
-    /**
-     * Create a square with its perimeter (parameter)
-     */
-    public void makeSquare(int perimeter){
-        
-        Rectangle rectangle = new Rectangle();
-        changeSize(perimeter/2,perimeter/2);
-        draw();
-        
-    }
-    /**
-     * Move the rectangle x times down, to the right, or to the left
-     */
-    public void walk(int x){
-        if (x>0){
-            for (int i = 0; i < Math.abs(x); i++) {
-                erase();
-                moveHorizontal(1);
-                moveVertical(1);
-                draw();
-            }
-        }else{
-            for (int i = 0; i < Math.abs(x); i++) {
-                erase();
-                moveHorizontal(-1);
-                moveVertical(1);
-                draw();
-            }
-        }
-    }
-    /**
-     * zoom in or out on the rectangle.
-     */
-    public void zoom(char z){
-        erase();
-        if (z == '+'){
-            height += height;
-            width += width;
-        }
-        if (z =='-'){
-            height -= height;
-            width -= width;
-        }
-        draw();
-    }
-    
-    /**
-     * Calculate the perimeter of the rectangle.
-     */
-    public int perimeter(){
-        int perimeter;
-        perimeter = height + width;
-        return perimeter;
-        
-    }
-    
-    
-    /**
-     * Create a new rectangle at default position with default color.
-     */
-    public Rectangle(){
+    public Rectangle() {
+        super(70, 15, "gold");
         height = 30;
         width = 40;
-        xPosition = 70;
-        yPosition = 15;
-        color = "gold";
-        isVisible = false;
-    }
-    
-
-    /**
-     * Make this rectangle visible. If it was already visible, do nothing.
-     */
-    public void makeVisible(){
-        isVisible = true;
-        draw();
-    }
-    
-    /**
-     * Make this rectangle invisible. If it was already invisible, do nothing.
-     */
-    public void makeInvisible(){
-        erase();
-        isVisible = false;
-    }
-    
-    /**
-     * Move the rectangle a few pixels to the right.
-     */
-    public void moveRight(){
-        moveHorizontal(20);
     }
 
     /**
-     * Move the rectangle a few pixels to the left.
+     * Multiplies the rectangle size.
+     * @param x Size factor.
      */
-    public void moveLeft(){
-        moveHorizontal(-20);
-    }
-
-    /**
-     * Move the rectangle a few pixels up.
-     */
-    public void moveUp(){
-        moveVertical(-20);
-    }
-
-    /**
-     * Move the rectangle a few pixels down.
-     */
-    public void moveDown(){
-        moveVertical(20);
-    }
-
-    /**
-     * Move the rectangle directly to a specific coordinate.
-     * @param x the new x position
-     * @param y the new y position
-     */
-    public void moveTo(int x, int y){
-        erase();
-        xPosition = x;
-        yPosition = y;
-        draw();
-    }
-
-    /**
-     * Move the rectangle horizontally.
-     * @param distance the desired distance in pixels
-     */
-    public void moveHorizontal(int distance){
-        erase();
-        xPosition += distance;
-        draw();
-    }
-
-    /**
-     * Move the rectangle vertically.
-     * @param distance the desired distance in pixels
-     */
-    public void moveVertical(int distance){
-        erase();
-        yPosition += distance;
-        draw();
-    }
-
-    /**
-     * Slowly move the rectangle horizontally.
-     * @param distance the desired distance in pixels
-     */
-    public void slowMoveHorizontal(int distance){
-        int delta;
-
-        if(distance < 0) {
-            delta = -1;
-            distance = -distance;
-        } else {
-            delta = 1;
-        }
-
-        for(int i = 0; i < distance; i++){
-            xPosition += delta;
+    public void multiplySize(int x) {
+        if (x > 0) {
+            erase();
+            changeSize(width * x, height * x);
+            draw();
+        } else if (x < 0) {
+            erase();
+            changeSize(
+                width / Math.abs(x),
+                height / Math.abs(x)
+            );
             draw();
         }
     }
 
     /**
-     * Slowly move the rectangle vertically.
-     * @param distance the desired distance in pixels
+     * Creates a square using the given perimeter.
+     * @param perimeter Value used to calculate the square size.
      */
-    public void slowMoveVertical(int distance){
-        int delta;
+    public void makeSquare(int perimeter) {
+        changeSize(perimeter / 2, perimeter / 2);
+        draw();
+    }
 
-        if(distance < 0) {
-            delta = -1;
-            distance = -distance;
-        } else {
-            delta = 1;
-        }
+    /**
+     * Moves the rectangle diagonally.
+     * @param x Number of steps.
+     */
+    public void walk(int x) {
+        int horizontal = x >= 0 ? 1 : -1;
 
-        for(int i = 0; i < distance; i++){
-            yPosition += delta;
+        for (int i = 0; i < Math.abs(x); i++) {
+            erase();
+            moveHorizontal(horizontal);
+            moveVertical(1);
             draw();
         }
     }
 
     /**
-     * Change the size to the new size
-     * @param newHeight the new height in pixels. newHeight must be >=0.
-     * @param newWidht the new width in pixels. newWidth must be >=0.
+     * Zooms the rectangle in or out.
+     * @param z '+' to increase or '-' to decrease.
+     */
+    public void zoom(char z) {
+        erase();
+
+        if (z == '+') {
+            height += height;
+            width += width;
+        } else if (z == '-') {
+            height = 0;
+            width = 0;
+        }
+
+        draw();
+    }
+
+    /**
+     * Calculates the rectangle perimeter according to the project implementation.
+     * @return Calculated perimeter.
+     */
+    public int perimeter() {
+        return height + width;
+    }
+
+    /**
+     * Changes the rectangle size.
+     * @param newHeight New height.
+     * @param newWidth New width.
      */
     public void changeSize(int newHeight, int newWidth) {
-        if (newHeight < 0 || newWidth < 0){
+        if (newHeight < 0 || newWidth < 0) {
             return;
         }
+
         erase();
         height = newHeight;
         width = newWidth;
         draw();
     }
-    
+
     /**
-     * Change the color. 
-     * @param color the new color. Valid colors are "red", "yellow", "blue", "green",
-     * "magenta" and "black".
+     * Resizes the rectangle through the Figure interface.
+     * @param newHeight New height.
+     * @param newWidth New width.
      */
-    public void changeColor(String newColor){
-        color = newColor;
-        draw();
+    @Override
+    protected void resize(int newHeight, int newWidth) {
+        changeSize(newHeight, newWidth);
     }
 
-    /*
-     * Draw the rectangle with current specifications on screen.
+    /**
+     * Creates the AWT geometric representation of the rectangle.
+     * @return Geometric rectangle.
      */
-
-    private void draw() {
-        if(isVisible) {
-            Canvas canvas = Canvas.getCanvas();
-            canvas.draw(this, color,
-                new java.awt.Rectangle(xPosition, yPosition, 
-                                       width, height));
-        }
-    }
-
-    /*
-     * Erase the rectangle on screen.
-     */
-    private void erase(){
-        if(isVisible) {
-            Canvas canvas = Canvas.getCanvas();
-            canvas.erase(this);
-        }
+    @Override
+    protected java.awt.Shape createShape() {
+        return new java.awt.Rectangle(
+            getXPosition(),
+            getYPosition(),
+            width,
+            height
+        );
     }
 }
-

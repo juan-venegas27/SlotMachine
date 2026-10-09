@@ -1,180 +1,69 @@
-import java.awt.*;
+package SLOTMACHINEFINAL;
+
+import java.awt.Polygon;
 
 /**
  * A triangle that can be manipulated and that draws itself on a canvas.
- * 
- * @author  Michael Kolling and David J. Barnes
- * @version 1.0  (15 July 2000)
  */
-
-public class Triangle{
-    
-    public static int VERTICES=3;
-    
+public class Triangle extends Figure {
+    public static int VERTICES = 3;
     private int height;
     private int width;
-    private int xPosition;
-    private int yPosition;
-    private String color;
-    private boolean isVisible;
 
     /**
-     * Create a new triangle at default position with default color.
+     * Creates a triangle at the default position with the default color.
      */
-    public Triangle(){
+    public Triangle() {
+        super(140, 15, "green");
         height = 30;
         width = 40;
-        xPosition = 140;
-        yPosition = 15;
-        color = "green";
-        isVisible = false;
     }
 
     /**
-     * Make this triangle visible. If it was already visible, do nothing.
-     */
-    public void makeVisible(){
-        isVisible = true;
-        draw();
-    }
-    
-    /**
-     * Make this triangle invisible. If it was already invisible, do nothing.
-     */
-    public void makeInvisible(){
-        erase();
-        isVisible = false;
-    }
-    
-    /**
-     * Move the triangle a few pixels to the right.
-     */
-    public void moveRight(){
-        moveHorizontal(20);
-    }
-
-    /**
-     * Move the triangle a few pixels to the left.
-     */
-    public void moveLeft(){
-        moveHorizontal(-20);
-    }
-
-    /**
-     * Move the triangle a few pixels up.
-     */
-    public void moveUp(){
-        moveVertical(-20);
-    }
-
-    /**
-     * Move the triangle a few pixels down.
-     */
-    public void moveDown(){
-        moveVertical(20);
-    }
-
-    /**
-     * Move the triangle horizontally.
-     * @param distance the desired distance in pixels
-     */
-    public void moveHorizontal(int distance){
-        erase();
-        xPosition += distance;
-        draw();
-    }
-
-    /**
-     * Move the triangle vertically.
-     * @param distance the desired distance in pixels
-     */
-    public void moveVertical(int distance){
-        erase();
-        yPosition += distance;
-        draw();
-    }
-
-    /**
-     * Slowly move the triangle horizontally.
-     * @param distance the desired distance in pixels
-     */
-    public void slowMoveHorizontal(int distance){
-        int delta;
-
-        if(distance < 0) {
-            delta = -1;
-            distance = -distance;
-        } else {
-            delta = 1;
-        }
-
-        for(int i = 0; i < distance; i++){
-            xPosition += delta;
-            draw();
-        }
-    }
-
-    /**
-     * Slowly move the triangle vertically.
-     * @param distance the desired distance in pixels
-     */
-    public void slowMoveVertical(int distance){
-        int delta;
-
-        if(distance < 0) {
-            delta = -1;
-            distance = -distance;
-        } else {
-            delta = 1;
-        }
-
-        for(int i = 0; i < distance; i++){
-            yPosition += delta;
-            draw();
-        }
-    }
-
-    /**
-     * Change the size to the new size
-     * @param newHeight the new height in pixels. newHeight must be >=0.
-     * @param newWidht the new width in pixels. newWidht must be >=0.
+     * Changes the triangle size.
+     * @param newHeight New height.
+     * @param newWidth New width.
      */
     public void changeSize(int newHeight, int newWidth) {
+        if (newHeight < 0 || newWidth < 0) {
+            return;
+        }
+
         erase();
         height = newHeight;
         width = newWidth;
         draw();
     }
-    
+
     /**
-     * Change the color. 
-     * @param color the new color. Valid colors are "red", "yellow", "blue", "green",
-     * "magenta" and "black".
+     * Resizes the triangle through the Figure interface.
+     * @param newHeight New height.
+     * @param newWidth New width.
      */
-    public void changeColor(String newColor){
-        color = newColor;
-        draw();
+    @Override
+    protected void resize(int newHeight, int newWidth) {
+        changeSize(newHeight, newWidth);
     }
 
-    /*
-     * Draw the triangle with current specifications on screen.
+    /**
+     * Creates the AWT geometric representation of the triangle.
+     * @return Geometric triangle.
      */
-    private void draw(){
-        if(isVisible) {
-            Canvas canvas = Canvas.getCanvas();
-            int[] xpoints = { xPosition, xPosition + (width/2), xPosition - (width/2) };
-            int[] ypoints = { yPosition, yPosition + height, yPosition + height };
-            canvas.draw(this, color, new Polygon(xpoints, ypoints, 3));
-        }
-    }
+    @Override
+    protected java.awt.Shape createShape() {
+        int x = getXPosition();
+        int y = getYPosition();
+        int[] xpoints = {
+            x,
+            x + width / 2,
+            x - width / 2
+        };
+        int[] ypoints = {
+            y,
+            y + height,
+            y + height
+        };
 
-    /*
-     * Erase the triangle on screen.
-     */
-    private void erase(){
-        if(isVisible) {
-            Canvas canvas = Canvas.getCanvas();
-            canvas.erase(this);
-        }
+        return new Polygon(xpoints, ypoints, VERTICES);
     }
 }

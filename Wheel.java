@@ -1,6 +1,7 @@
+package SLOTMACHINEFINAL;
+
 import java.util.ArrayList;
 import java.util.Random;
-
 /**
  * Individual wheel for the slot machine.
  */
@@ -11,137 +12,137 @@ public class Wheel {
     private int yPosition;
     private boolean isVisible;
     private boolean isLocked;
+    private Wheel leftWheel;
     private Rectangle wheelFrame;
     private Rectangle wheelViewport;
     private static final Random random = new Random();
-
     /**
      * Creates a wheel at its default visual position.
      */
     public Wheel() {
         this(40, 55);
     }
-
+    
     /**
      * Creates a wheel at specific coordinates.
-     * @param posx Initial horizontal pixel position.
-     * @param posy Initial vertical pixel position.
+     * @param posx Initial horizontal position.
+     * @param posy Initial vertical position.
      */
     public Wheel(int posx, int posy) {
-        symbols = new ArrayList<>();
+        symbols = new ArrayList<Symbol>();
         currentIndex = 0;
         xPosition = posx;
         yPosition = posy;
         isVisible = false;
         isLocked = false;
-
+        leftWheel = null;
         wheelFrame = new Rectangle();
         wheelFrame.changeSize(100, 70);
         wheelFrame.changeColor("#A8A9AD");
-
         wheelViewport = new Rectangle();
         wheelViewport.changeSize(84, 54);
         wheelViewport.changeColor("#FDFDFD");
-
         updatePositions();
     }
 
     /**
-     * Adds a new colored symbol to the wheel at the specified position.
-     * @param pos Insertion position for the symbol (1 for the first position).
-     * @param color Color name in English or hexadecimal code.
+     * Adds a normal symbol at the specified position.
+     * @param pos Insertion position.
+     * @param color Symbol color.
      */
     public void addSymbol(int pos, String color) {
-        Symbol newSymbol = new Symbol(color);
+        addSymbol(pos, color, "normal");
+    }
 
+    /**
+     * Adds a symbol of the requested type.
+     * @param pos Insertion position.
+     * @param color Symbol color.
+     * @param type Symbol type.
+     */
+    public void addSymbol(int pos,String color,String type) {
+        Symbol newSymbol = SymbolCreator.create(type, color);
         if (symbols.isEmpty()) {
             symbols.add(newSymbol);
         } else {
-            int targetPos = Math.max(1, Math.min(pos, symbols.size() + 1));
+            int targetPos = Math.max(1,Math.min(pos, symbols.size() + 1));
             symbols.add(targetPos - 1, newSymbol);
         }
-
         updatePositions();
     }
 
     /**
-     * Removes the first symbol matching the specified color.
-     * @param color Color of the symbol to remove.
-     * @return True if the symbol was found and removed, false otherwise.
+     * Removes the first symbol matching the color.
+     * @param color Symbol color.
+     * @return True when a symbol was removed.
      */
     public boolean delSymbol(String color) {
         int index = indexOfColor(color);
-
         if (index == -1) {
             return false;
         }
-
         Symbol removed = symbols.remove(index);
         removed.makeInvisible();
-
         if (symbols.isEmpty()) {
             currentIndex = 0;
         } else if (currentIndex >= symbols.size()) {
             currentIndex = symbols.size() - 1;
         }
-
         updatePositions();
         return true;
     }
 
     /**
      * Sets the wheel to display a specific symbol.
-     * @param color Color of the symbol to display.
-     * @return True if the symbol exists in the wheel, false otherwise.
+     * @param color Symbol color.
+     * @return True when the symbol exists.
      */
     public boolean placeSymbol(String color) {
         int index = indexOfColor(color);
-
         if (index == -1) {
             return false;
         }
-
         currentIndex = index;
+        symbols.get(currentIndex).onSelected();
         updatePositions();
         return true;
     }
 
     /**
-     * Checks if the wheel contains a symbol with the specified color.
-     * @param color Color to look for in the wheel.
-     * @return True if the color exists in the wheel, false otherwise.
+     * Checks if the wheel contains the given symbol.
+     * @param color Symbol color.
+     * @return True when the symbol exists.
      */
     public boolean containsSymbol(String color) {
         return indexOfColor(color) != -1;
     }
-
+    
     /**
-     * Returns the color of the symbol currently visible on the wheel.
-     * @return Currently visible color, or null if the wheel has no symbols.
+     * Returns the current symbol color.
+     * @return Current color or null if the wheel has no symbols.
      */
     public String getCurrentSymbol() {
-        return symbols.isEmpty()
-            ? null
-            : symbols.get(currentIndex).getColor();
+        if (symbols.isEmpty()) {
+            return null;
+        }
+        return symbols.get(currentIndex).getColor();
     }
-
+    
     /**
-     * Returns the list of all symbol colors contained in the wheel.
-     * @return Array with the symbol colors in their current order.
+     * Returns all symbol colors.
+     * @return Array with symbol colors.
      */
     public String[] symbols() {
         String[] colors = new String[symbols.size()];
-
         for (int i = 0; i < symbols.size(); i++) {
             colors[i] = symbols.get(i).getColor();
         }
-
         return colors;
     }
 
     /**
-     * Returns the total number of symbols in the wheel.
-     * @return Total count of symbols.
+     * Returns the number of symbols.
+     * @return Symbol count.
      */
     public int countSymbols() {
         return symbols.size();
@@ -154,47 +155,137 @@ public class Wheel {
         if (isLocked || symbols.isEmpty()) {
             return;
         }
-
         spinSteps(2 + random.nextInt(6));
     }
 
     /**
-     * Advances or moves the wheel backward by a specific number of steps.
-     * Positive values rotate forward and negative values rotate backward.
-     * The movement is cyclic.
-     * @param steps Number of positions to rotate.
+     * Spins the wheel by the requested number of steps.
+     * @param steps Number of positions.
      */
     public void spinSteps(int steps) {
-        if (isLocked || symbols.isEmpty() || steps == 0) {
+        if (!canSpin(steps)) {
             return;
         }
-
-        int direction = steps > 0 ? 1 : -1;
-        int amount = Math.abs(steps % symbols.size());
-
-        for (int s = 0; s < amount; s++) {
-            currentIndex += direction;
-
-            if (currentIndex >= symbols.size()) {
-                currentIndex = 0;
-            }
-
-            if (currentIndex < 0) {
-                currentIndex = symbols.size() - 1;
-            }
-
-            updatePositions();
-
-            if (isVisible) {
-                Canvas.getCanvas().wait(70);
-            }
+        applySpinEffect();
+        rotateSteps(steps);
+        afterSpinStep();
+    }
+    
+    /**
+     * Performs one animation step without applying final spin effects.
+     */
+    void spinAnimationStep() {
+        if (isLocked || symbols.isEmpty()) {
+            return;
+        }
+        currentIndex++;
+        normalizeCurrentIndex();
+        symbols.get(currentIndex).onSelected();
+        updatePositions();
+        if (isVisible) {
+            Canvas.getCanvas().wait(500);
+        }
+    }
+    
+    /**
+     * Applies the effects that happen once when a complete spin finishes.
+     */
+    void finishSpin() {
+        if (isLocked || symbols.isEmpty()) {
+            return;
+        }
+        applySpinEffect();
+        afterSpinStep();
+    }
+    
+    /**
+     * Applies one complete spin effect to every symbol.
+     */
+    protected void applySpinEffect() {
+        for (Symbol symbol : symbols) {
+            symbol.onSpin();
         }
     }
 
     /**
-     * Moves the wheel to a new position on the screen.
-     * @param x Horizontal pixel position.
-     * @param y Vertical pixel position.
+     * Checks whether the wheel can spin.
+     * @param steps Number of requested steps.
+     * @return True when the spin is valid.
+     */
+    private boolean canSpin(int steps) {
+        return !isLocked && !symbols.isEmpty() && steps != 0;
+    }
+
+    /**
+     * Rotates the wheel by the requested amount.
+     * @param steps Number of positions.
+     */
+    private void rotateSteps(int steps) {
+        int direction = steps > 0 ? 1 : -1;
+        int amount = Math.abs(steps % symbols.size());
+        if (symbols.size() == 1) {
+            rotateOneStep(direction);
+            return;
+        }
+        for (int i = 0; i < amount; i++) {
+            rotateOneStep(direction);
+        }
+    }
+
+    /**
+     * Performs one wheel rotation.
+     * @param direction Rotation direction.
+     */
+    private void rotateOneStep(int direction) {
+        currentIndex += direction;
+        normalizeCurrentIndex();
+        symbols.get(currentIndex).onSelected();
+        updatePositions();
+        afterSpinStep();
+        if (isVisible) {
+            Canvas.getCanvas().wait(1000);
+        }
+    }
+
+    /**
+     * Keeps the current symbol index valid.
+     */
+    private void normalizeCurrentIndex() {
+        if (currentIndex >= symbols.size()) {
+            currentIndex = 0;
+        }
+        if (currentIndex < 0) {
+            currentIndex = symbols.size() - 1;
+        }
+    }
+
+    /**
+     * Performs special behavior after one rotation step.
+     * Subclasses may override this method.
+     */
+    protected void afterSpinStep() {
+    }
+
+    /**
+     * Copies the current symbol from another wheel.
+     * @param source Source wheel.
+     */
+    protected void copyCurrentSymbol(Wheel source) {
+        if (source == null) {
+            return;
+        }
+        String color = source.getCurrentSymbol();
+        int index = indexOfColor(color);
+        if (index != -1) {
+            currentIndex = index;
+            updatePositions();
+        }
+    }
+
+    /**
+     * Moves the wheel to a screen position.
+     * @param x Horizontal position.
+     * @param y Vertical position.
      */
     public void moveTo(int x, int y) {
         xPosition = x;
@@ -203,7 +294,7 @@ public class Wheel {
     }
 
     /**
-     * Shows the wheel and its active symbol on the screen.
+     * Makes the wheel visible.
      */
     public void makeVisible() {
         isVisible = true;
@@ -211,84 +302,141 @@ public class Wheel {
     }
 
     /**
-     * Hides the wheel and its symbols from the screen.
+     * Makes the wheel invisible.
      */
     public void makeInvisible() {
         isVisible = false;
         wheelFrame.makeInvisible();
         wheelViewport.makeInvisible();
-
-        for (Symbol sym : symbols) {
-            sym.makeInvisible();
+        for (Symbol symbol : symbols) {
+            symbol.makeInvisible();
         }
     }
 
     /**
-     * Locks the wheel to prevent it from spinning.
+     * Locks the wheel.
      */
     public void lock() {
+        if (!canLock()) {
+            return;
+        }
         isLocked = true;
         wheelFrame.changeColor("black");
         updatePositions();
     }
 
     /**
-     * Unlocks the wheel to allow it to spin again.
+     * Unlocks the wheel.
      */
     public void unlock() {
         isLocked = false;
-        wheelFrame.changeColor("#A8A9AD");
+        wheelFrame.changeColor(unlockedFrameColor());
         updatePositions();
     }
 
     /**
      * Indicates whether the wheel is locked.
-     * @return True if the wheel is locked, false if it can spin.
+     * @return True when locked.
      */
     public boolean isLocked() {
         return isLocked;
     }
 
     /**
-     * Updates the positions and visibility of the wheel borders and its current symbol.
+     * Indicates whether the wheel can be locked.
+     * @return True for a normal wheel.
+     */
+    public boolean canLock() {
+        return true;
+    }
+
+    /**
+     * Indicates whether the wheel can be exchanged.
+     * @return True for a normal wheel.
+     */
+    public boolean canSwap() {
+        return true;
+    }
+
+    /**
+     * Indicates whether the wheel can be deleted.
+     * @return True for a normal wheel.
+     */
+    public boolean canDelete() {
+        return true;
+    }
+
+    /**
+     * Returns the frame color for an unlocked wheel.
+     * @return Unlocked frame color.
+     */
+    protected String unlockedFrameColor() {
+        return "#A8A9AD";
+    }
+
+    /**
+     * Changes the wheel frame color.
+     * @param color New frame color.
+     */
+    protected void setFrameColor(String color) {
+        wheelFrame.changeColor(color);
+    }
+
+    /**
+     * Assigns the wheel immediately to the left.
+     * @param wheel Left wheel.
+     */
+    void setLeftWheel(Wheel wheel) {
+        leftWheel = wheel;
+    }
+
+    /**
+     * Returns the wheel immediately to the left.
+     * @return Left wheel or null.
+     */
+    protected Wheel getLeftWheel() {
+        return leftWheel;
+    }
+
+    /**
+     * Updates the wheel and symbol positions.
      */
     private void updatePositions() {
         wheelFrame.moveTo(xPosition, yPosition);
-        wheelViewport.moveTo(xPosition + 8, yPosition + 8);
-
+        wheelViewport.moveTo(xPosition + 8,yPosition + 8);
         if (isVisible) {
             wheelFrame.makeVisible();
             wheelViewport.makeVisible();
         }
-
         for (int i = 0; i < symbols.size(); i++) {
-            Symbol sym = symbols.get(i);
-
-            sym.moveTo(
-                xPosition + 12,
-                yPosition + 13
-            );
-
-            if (i == currentIndex && isVisible) {
-                sym.makeVisible();
-            } else {
-                sym.makeInvisible();
-            }
+            Symbol symbol = symbols.get(i);
+            symbol.moveTo(xPosition + 35,yPosition + 50);
+            symbol.updateVisibility(i == currentIndex,isVisible);
         }
     }
 
     /**
      * Finds the index of a symbol by its color.
-     * @param color Color to search for in the wheel.
-     * @return The index of the symbol, or -1 if it is not found.
+     * @param color Color to search.
+     * @return Symbol index or -1.
      */
     private int indexOfColor(String color) {
+        if (color == null) {
+            return -1;
+        }
         for (int i = 0; i < symbols.size(); i++) {
             if (symbols.get(i).matches(color)) {
                 return i;
             }
         }
-
         return -1;
+    }
+    
+    /**
+     * Indicates whether the current symbol is a wildcard.
+     * @return True when the selected symbol is a wildcard.
+     */
+    public boolean currentSymbolIsWildcard() {
+        return !symbols.isEmpty() && symbols.get(currentIndex).isWildcard();
     }
 }
