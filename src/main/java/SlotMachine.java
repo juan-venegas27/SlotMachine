@@ -1,5 +1,3 @@
-package SLOTMACHINEFINAL;
-
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Random;
@@ -385,41 +383,56 @@ public class SlotMachine {
         return reel.configuration();
     }
 
-    /**
-     * Checks if all unlocked wheels can represent the same winning symbol.
-     * Wildcard symbols can match any color.
-     * Locked wheels are ignored.
-     * @return True when the configuration is a jackpot.
-     */
-    public boolean isjackpot() {
-        if (reel.size() == 0) {
+/**
+ * Checks if all unlocked wheels can represent the same winning symbol.
+ * Wildcard symbols can match any color.
+ * Locked wheels are ignored.
+ * Hidden symbols are not counted as jackpots.
+ * @return True when the configuration is a jackpot.
+ */
+public boolean isjackpot() {
+    if (reel.size() == 0) {
+        return false;
+    }
+
+    String targetColor = null;
+    boolean foundWildcard = false;
+    boolean foundUnlockedWheel = false;
+
+    for (int i = 1; i <= reel.size(); i++) {
+        Wheel wheel = reel.getWheel(i);
+
+        if (wheel.isLocked()) {
+            continue;
+        }
+
+        foundUnlockedWheel = true;
+
+        String color = wheel.getCurrentSymbol();
+
+        if (color == null) {
             return false;
         }
-        String targetColor = null;
-        boolean foundWildcard = false;
-        boolean foundUnlockedWheel = false;
-        for (int i = 1; i <= reel.size(); i++) {
-            Wheel wheel = reel.getWheel(i);
-            if (wheel.isLocked()) {
-                continue;
-            }
-            foundUnlockedWheel = true;
-            String color = wheel.getCurrentSymbol();
-            if (color == null) {
-                return false;
-            }
-            if (wheel.currentSymbolIsWildcard()) {
-                foundWildcard = true;
-                continue;
-            }
-            if (targetColor == null) {
-                targetColor = color;
-            } else if (!targetColor.equalsIgnoreCase(color)) {
-                return false;
-            }
+
+        if (!wheel.currentSymbolIsDisplayEnabled()) {
+            return false;
         }
-        return foundUnlockedWheel && (targetColor != null || foundWildcard);
+
+        if (wheel.currentSymbolIsWildcard()) {
+            foundWildcard = true;
+            continue;
+        }
+
+        if (targetColor == null) {
+            targetColor = color;
+        } else if (!targetColor.equalsIgnoreCase(color)) {
+            return false;
+        }
     }
+
+    return foundUnlockedWheel && (targetColor != null || foundWildcard);
+}
+
 
     /**
      * Makes the machine visible.

@@ -1,5 +1,3 @@
-package SLOTMACHINEFINAL;
-
 /**
  * Represents an individual visual symbol displayed inside a wheel slot.
  */

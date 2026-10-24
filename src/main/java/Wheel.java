@@ -1,5 +1,3 @@
-package SLOTMACHINEFINAL;
-
 import java.util.ArrayList;
 import java.util.Random;
 /**
@@ -125,6 +123,23 @@ public class Wheel {
         if (symbols.isEmpty()) {
             return null;
         }
+        return symbols.get(currentIndex).getColor();
+    }
+    
+/**
+     * Returns the current symbol color when the symbol is enabled for display.
+     * @return Current symbol color or an empty string when there is no symbol
+     *         or when the current symbol is hidden.
+     */
+    public String getCurrentVisibleSymbol() {
+        if (symbols.isEmpty()) {
+            return "";
+        }
+
+        if (!symbols.get(currentIndex).isDisplayEnabled()) {
+            return "";
+        }
+
         return symbols.get(currentIndex).getColor();
     }
     
@@ -282,6 +297,15 @@ public class Wheel {
         }
     }
 
+
+    /**
+     * Indicates whether the current symbol can be displayed.
+     * @return True when the current symbol display is enabled.
+     */
+    public boolean currentSymbolIsDisplayEnabled() {
+        return symbols.get(currentIndex).isDisplayEnabled();
+    }
+
     /**
      * Moves the wheel to a screen position.
      * @param x Horizontal position.
@@ -292,6 +316,11 @@ public class Wheel {
         yPosition = y;
         updatePositions();
     }
+
+
+    /**
+
+    
 
     /**
      * Makes the wheel visible.

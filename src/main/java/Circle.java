@@ -1,5 +1,3 @@
-package SLOTMACHINEFINAL;
-
 import java.awt.geom.Ellipse2D;
 
 /**
